@@ -2494,10 +2494,13 @@ class Model extends Object implements CakeEventListener {
 				$return[$association] = $validates;
 			}
 
-			if ($validates && !($this->create(null) !== null && $this->save($data, array('atomic' => false) + $options))) {
+			$saveResult = $this->save($data, array('atomic' => false) + $options);
+
+			if ($validates && !($this->create(null) !== null && $saveResult)) {
 				$validationErrors[$this->alias] = $this->validationErrors;
 				$validates = false;
 			}
+
 			$return[$this->alias] = $validates;
 
 			foreach ($data as $association => $values) {
