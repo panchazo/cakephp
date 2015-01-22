@@ -191,4 +191,42 @@ class DatabaseSessionTest extends CakeTestCase {
 		$storage->gc();
 		$this->assertFalse($storage->read('foo'));
 	}
+
+/**
+ * testConcurrentInsert
+ *
+ * @return void
+ */
+	public function testConcurrentInsert() {
+		ClassRegistry::removeObject('Session');
+
+		$mockedModel = $this->getMock(
+			'SessionTestModel',
+			['exists'],
+			[
+				[
+					'alias' => 'MockedSessionTestModel',
+					'table' => 'sessions',
+					'ds' => 'test',
+					'testing' => true
+				]
+			]
+		);
+		ClassRegistry::addObject('Session', $mockedModel);
+		Configure::write('Session.handler.model', 'MockedSessionTestModel');
+
+		$mockedModel->expects($this->any())
+			->method('exists')
+			->will($this->returnValue(false));
+
+		$this->storage = new DatabaseSession();
+
+		$this->storage->write('foo', 'Some value');
+		$return = $this->storage->read('foo');
+		$this->assertSame('Some value', $return);
+
+		$this->storage->write('foo', 'Some other value');
+		$return = $this->storage->read('foo');
+		$this->assertSame('Some other value', $return);
+	}
 }
