@@ -114,7 +114,12 @@ class DatabaseSession implements CakeSessionHandlerInterface {
 		$expires = time() + $this->_timeout;
 		$record = compact('id', 'data', 'expires');
 		$record[$this->_model->primaryKey] = $id;
-		return $this->_model->save($record);
+
+		try {
+			return $this->_model->save($record);
+		} catch (Exception $e) {
+			return $this->_model->save($record);
+		}
 	}
 
 /**
